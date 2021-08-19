@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@electron/remote": "^1.2.0",
-    "@imjs/electron-differential-updater": "^5.1.6",
+    "@imjs/electron-differential-updater": "^5.1.7",
     "adm-zip": "^0.5.1",
     "async": "^3.2.0",
     "decompress-zip": "^0.3.3",
