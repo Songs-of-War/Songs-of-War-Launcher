@@ -30,7 +30,7 @@ fancyGraphics:true
 ao:0
 biomeBlendRadius:0
 renderClouds:false
-resourcePacks:["mod_resources","vanilla","programer_art","file/SoWPack"]
+resourcePacks:["mod_resources","vanilla","file/SoWPack"]
 incompatibleResourcePacks:[]
 lastServer:
 lang:en_us
