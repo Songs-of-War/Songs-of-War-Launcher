@@ -96,7 +96,6 @@ function setLaunchEnabled(val){
     document.getElementById('server_selection_button').disabled = !val
 }
 
-
 // Bind launch button
 document.getElementById('launch_button').addEventListener('click', function(e){
     loggerLanding.log('Launching game..')
@@ -134,7 +133,7 @@ document.getElementById('settingsMediaButton').onclick = (e) => {
 // Bind screnshots button
 document.getElementById('screenshotsMediaButton').onclick = (e) => {
     const screenshotsPath = path.join(ConfigManager.getInstanceDirectory(), DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer()).getID(), 'screenshots')
-    
+
     if(fs.existsSync(screenshotsPath)) {
         shell.openPath(screenshotsPath)
     } else {
@@ -193,10 +192,12 @@ server_selection_button.onclick = (e) => {
 }
 
 // Update Mojang Status Color
-/*const refreshMojangStatuses = async function(){
+const refreshMojangStatuses = async function(){
     loggerLanding.log('Refreshing Mojang Statuses..')
 
-    let allowchecking = false
+    let status = 'grey'
+    let tooltipEssentialHTML = ''
+    let tooltipNonEssentialHTML = ''
 
     try {
         const statuses = await Mojang.status()
@@ -205,11 +206,6 @@ server_selection_button.onclick = (e) => {
 
         for(let i=0; i<statuses.length; i++){
             const service = statuses[i]
-
-            // Mojang API is broken for sessionserver. https://bugs.mojang.com/browse/WEB-2303
-            if(service.service === 'sessionserver.mojang.com') {
-                service.status = 'green'
-            }
 
             if(service.essential){
                 tooltipEssentialHTML += `<div class="mojangStatusContainer">
@@ -223,61 +219,36 @@ server_selection_button.onclick = (e) => {
                 </div>`
             }
 
-        let status = 'grey'
-        let tooltipEssentialHTML = ''
-        let tooltipNonEssentialHTML = ''
-
-        try {
-            const statuses = await Mojang.status()
-            greenCount = 0
-            greyCount = 0
-
-            for(let i=0; i<statuses.length; i++){
-                const service = statuses[i]
-
-                if(service.essential){
-                    tooltipEssentialHTML += `<div class="mojangStatusContainer">
-                        <span class="mojangStatusIcon" style="color: ${Mojang.statusToHex(service.status)};">&#8226;</span>
-                        <span class="mojangStatusName">${service.name}</span>
-                    </div>`
-                } else {
-                    tooltipNonEssentialHTML += `<div class="mojangStatusContainer">
-                        <span class="mojangStatusIcon" style="color: ${Mojang.statusToHex(service.status)};">&#8226;</span>
-                        <span class="mojangStatusName">${service.name}</span>
-                    </div>`
+            if(service.status === 'yellow' && status !== 'red'){
+                status = 'yellow'
+            } else if(service.status === 'red'){
+                status = 'red'
+            } else {
+                if(service.status === 'grey'){
+                    ++greyCount
                 }
-
-                if(service.status === 'yellow' && status !== 'red'){
-                    status = 'yellow'
-                } else if(service.status === 'red'){
-                    status = 'red'
-                } else {
-                    if(service.status === 'grey'){
-                        ++greyCount
-                    }
-                    ++greenCount
-                }
-
+                ++greenCount
             }
 
-            if(greenCount === statuses.length){
-                if(greyCount === statuses.length){
-                    status = 'grey'
-                } else {
-                    status = 'green'
-                }
-            }
-
-        } catch (err) {
-            loggerLanding.warn('Unable to refresh Mojang service status.')
-            loggerLanding.debug(err)
         }
+
+        if(greenCount === statuses.length){
+            if(greyCount === statuses.length){
+                status = 'grey'
+            } else {
+                status = 'green'
+            }
+        }
+
+    } catch (err) {
+        loggerLanding.warn('Unable to refresh Mojang service status.')
+        loggerLanding.debug(err)
     }
     
-    //document.getElementById('mojangStatusEssentialContainer').innerHTML = tooltipEssentialHTML
-    //document.getElementById('mojangStatusNonEssentialContainer').innerHTML = tooltipNonEssentialHTML
-    //document.getElementById('mojang_status_icon').style.color = Mojang.statusToHex(status)
-}*/
+    document.getElementById('mojangStatusEssentialContainer').innerHTML = tooltipEssentialHTML
+    document.getElementById('mojangStatusNonEssentialContainer').innerHTML = tooltipNonEssentialHTML
+    document.getElementById('mojang_status_icon').style.color = Mojang.statusToHex(status)
+}
 
 const refreshServerStatus = async function(fade = false){
     loggerLanding.log('Refreshing Server Status')
@@ -322,7 +293,7 @@ const refreshRPC = async function() {
     let uuid = ConfigManager.getSelectedAccount().uuid
     uuid = uuid.substring(0, 8) + '-' + uuid.substring(8, 12) + '-' + uuid.substring(12, 16) + '-' + uuid.substring(16, 20) + '-' + uuid.substring(20, 32)
     if(uuid.length !== 36) {return}
-    
+
     try {
         // Call API
         let response = await got('https://mysql.songs-of-war.com/api/index.php?PlayerUUID=' + uuid)
@@ -346,7 +317,7 @@ const refreshRPC = async function() {
             // Set location
             if(typeof response.CurrentPosition === 'string') {
                 DiscordWrapper.updateDetails('In ' + response.CurrentPosition)
-                
+
             } else {
                 //Check if user left server, since there is no way to do it through the minecraft logs this will have to do.
                 if(joinedServer) {
@@ -356,14 +327,14 @@ const refreshRPC = async function() {
                 }
             }
 
-            
+
         }
     } catch(error) {
         return
     }
 }
 
-//refreshMojangStatuses()
+refreshMojangStatuses()
 // Server Status is refreshed in uibinder.js on distributionIndexDone.
 
 // Set refresh rate to once every 5 minutes.
@@ -392,7 +363,7 @@ function showLaunchFailure(title, desc){
 
 /**
  * Shows a non closable overlay
- * 
+ *
  * @param {string} title The overlay title.
  * @param {string} desc The overlay description.
  */
@@ -637,7 +608,7 @@ let progressListener
 
 /**
  * Use a default options.txt that comes with the launcher.
- * 
+ *
  * @param {string} optionsPath - Path to instance options.txt
  */
 function useDefaultOptions(optionsPath, optifineOnly = false) {
@@ -651,9 +622,9 @@ function useDefaultOptions(optionsPath, optifineOnly = false) {
 
 /**
  * Copied from uibinder.js
- * 
+ *
  * Verify login tokens
- * 
+ *
  * @returns boolean
  */
 async function landingValidateSelectedAccount(){
@@ -728,7 +699,7 @@ function dlAsync(login = true){
             loggerLanding.error('You must be logged into an account.')
             return
         }
-    }  
+    }
 
     if(GameInstanceStarted) {
         setLaunchEnabled(false)
@@ -736,7 +707,7 @@ function dlAsync(login = true){
         return
     }
 
-    
+
 
 
     setLaunchDetails('Please wait..')
@@ -799,7 +770,7 @@ function dlAsync(login = true){
                 showLaunchFailure('Error During Launch', '\nWe were not able to make an error report automatically.' + err)
             }
         })()
-        
+
     })
     aEx.on('close', (code, signal) => {
         if(code !== 0){
@@ -832,7 +803,7 @@ function dlAsync(login = true){
                     showLaunchFailure('Error During Launch', ' \nWe were not able to make an error report automatically. ' + err)
                 }
             })()
-            
+
         }
     })
 
@@ -1079,14 +1050,14 @@ function dlAsync(login = true){
                         if(result.body.includes('true')) {
                             showLaunchFailure('Server in maintenance', 'Our data server is currently in maintenance. Likely because of an update, please try again later.')
                         } else {
-                            try {                                                             
-        
+                            try {
+
                                 setLaunchDetails('Done. Enjoy the server!')
                                 setLaunchEnabled(false)
 
                                 // Get the game instance
                                 const gamePath = path.join(ConfigManager.getInstanceDirectory(), DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer()).getID())
-        
+
                                 const paths = {
                                     mods: path.join(gamePath, 'mods'),
                                     options: path.join(gamePath, 'options.txt'),
@@ -1103,34 +1074,34 @@ function dlAsync(login = true){
                                         }
                                     })
                                 }
-        
+
                                 //Setting up the default config for clients and overriding certain options required for the server
-        
+
                                 // If there aren't any options set so far
                                 if(!fs.existsSync(paths.options) || !fs.existsSync(path.join(gamePath, 'optionsof.txt'))) {
                                     loggerLaunchSuite.log('Could not find options in instance directory.')
-        
-                                    // Try to grab .minecraft/options.txt                 
+
+                                    // Try to grab .minecraft/options.txt
                                     const oldOptionsPath = path.join(ConfigManager.getMinecraftDirectory(), 'options.txt')
                                     loggerLaunchSuite.log('Attempting to find ' + oldOptionsPath)
                                     if(fs.existsSync(oldOptionsPath)) {
                                         loggerLaunchSuite.log('Found! Attempting to copy.')
                                         fs.copyFileSync(oldOptionsPath, paths.options)
                                         useDefaultOptions(paths.options, true)
-        
+
                                     // If it doesn't exist
                                     } else {
                                         useDefaultOptions(paths.options)
                                         loggerLaunchSuite.log('Couldn\'t find options.txt in Minecraft or launcher instance. Launcher defaults used.')
                                     }
-                                    
+
                                 }
-        
+
                                 // Loop through our options.txt and attempt to override
                                 loggerLaunchSuite.log('Validating options...')
                                 let data = fs.readFileSync(paths.options, 'utf8').split('\n')
                                 let packOn = false, musicOff = false, fullscreenOff = false
-        
+
                                 data.forEach((element, index) => {
                                     if(element.startsWith('resourcePacks:')) {
                                         data[index] = 'resourcePacks:["mod_resources","vanilla","programer_art","file/SoWPack"]'
@@ -1156,7 +1127,7 @@ function dlAsync(login = true){
                                         }
                                     })
                                 }
-        
+
                                 // If override successful
                                 if(packOn && musicOff && fullscreenOff && optifineOverrides) {
                                     fs.writeFileSync(paths.options, data.join('\n'))
@@ -1165,21 +1136,21 @@ function dlAsync(login = true){
                                     useDefaultOptions(paths.options)
                                     loggerLaunchSuite.log('Couldn\'t validate options. Launcher defaults used.')
                                 }
-        
-        
+
+
                                 if(ConfigManager.getShaderMirroring()) {
                                     // Grab shaders while we're at it as well
                                     const oldShadersPath = path.join(ConfigManager.getMinecraftDirectory(), 'shaderpacks')
-            
+
                                     // Check if there's a place to get shaders and a place to put them
                                     if(fs.existsSync(paths.shaderpacks) && fs.existsSync(oldShadersPath)) {
-            
+
                                         // Find shaders in .minecraft/shaderpacks that instance doesn't have
                                         let shadersArr = fs.readdirSync(paths.shaderpacks)
                                         fs.readdirSync(oldShadersPath)
                                             .filter(element => !shadersArr.includes(element))
                                             .forEach(element => {
-            
+
                                                 // Attempt to copy shader
                                                 try{
                                                     fs.copyFileSync(path.join(oldShadersPath, element), path.join(paths.shaderpacks, element))
@@ -1188,7 +1159,7 @@ function dlAsync(login = true){
                                                     loggerLaunchSuite.warn('Failed to copy shader '+ element.slice(0, -4) + ' to launcher instance.')
                                                 }
                                             })
-            
+
                                     }
                                 } else {
                                     loggerLaunchSuite.log('Shader mirroring disabled in launcher config')
@@ -1199,10 +1170,10 @@ function dlAsync(login = true){
                                 if(process.platform === 'linux') {
                                     watcherRecurse = false
                                 }
-                                
+
                                 // Updated as of late: We want to delete the mods / edit the configuration right before the game is launched, so that the launcher gets the change to synchronise the files with the distribution
                                 // Fixes ENOENT error without a .songsofwar folder
-                                       
+
 
                                 // Setup the watchers right before the process start and just after the asset checker is done
                                 // Setup the different file watchers
@@ -1223,7 +1194,7 @@ function dlAsync(login = true){
                                 WindowHidden = true
                                 if(process.platform === 'win32') {
                                     const { Tray, Menu } = require('electron').remote
-                                    
+
 
                                     TrayObject = new Tray(path.join(__dirname, '/assets/images/icon.png'))
                                     TrayObject.setToolTip('Songs of War Game - Game Running')
@@ -1241,7 +1212,7 @@ function dlAsync(login = true){
                                         }
                                     })
                                 }
-                                
+
                                 // Bind listeners to stdout.
                                 proc.stdout.on('data', tempListener)
                                 proc.stderr.on('data', gameErrorListener)
@@ -1256,7 +1227,7 @@ function dlAsync(login = true){
                                         //Shutdown all the file watchers
                                         ModsWatcher.close()
                                         remote.getCurrentWindow().show()
-                                        
+
                                         if(process.platform === 'win32') TrayObject.destroy(); loggerLanding.log('Open window, trigger')
                                         WindowHidden = false
                                     }
@@ -1264,7 +1235,7 @@ function dlAsync(login = true){
                                         GameInstanceStarted = true
                                     }
                                 })
-        
+
                                 //Receive crash message
                                 proc.on('message', (data) => {
                                     if(data === 'Crashed') {
@@ -1283,7 +1254,7 @@ function dlAsync(login = true){
                                             })
                                             if(!ModifyError) {
 
-                                                let reportdata = fs.readFileSync(ConfigManager.getLauncherDirectory() + '/latest.log', 'utf-8')                                            
+                                                let reportdata = fs.readFileSync(ConfigManager.getLauncherDirectory() + '/latest.log', 'utf-8')
                                                 await new Promise((resolve, reject) => {
                                                     setTimeout(function() { resolve() }, 3000) //Wait 3 seconds
                                                 })
@@ -1301,7 +1272,7 @@ function dlAsync(login = true){
                                                 } catch(err) {
                                                     showLaunchFailure('Game crashed', '\nWe were not able to make an error report automatically.' + err)
                                                 }
-                                        
+
                                             } else {
                                                 showLaunchFailure('Runtime error', 'A runtime error has occured, most likely due to a file edit.')
                                             }
@@ -1320,7 +1291,7 @@ function dlAsync(login = true){
                                         showLaunchFailure('Video driver unavailable', 'WGL: The driver does not appear to support OpenGL\n\nPlease try to update your graphics drivers, for more information\nplease refer to <a href="https://aka.ms/mcdriver/">this guide</a>')
                                     }
                                 })
-                                
+
 
                                 ///This is very stupid but oh well
                                 let ModifyError = false
@@ -1368,10 +1339,10 @@ function dlAsync(login = true){
                                     }
                                 })
 
-                                
+
 
                             } catch(err) {
-        
+
                                 DiscordWrapper.updateDetails('In the Launcher', new Date().getTime())
                                 setLaunchEnabled(true)
                                 remote.getCurrentWindow().show()
@@ -1404,7 +1375,7 @@ function dlAsync(login = true){
                                         showLaunchFailure('Error During Launch', '\nWe were not able to make an error report automatically.' + err)
                                     }
                                 })()
-        
+
                             }
                         }
                     })

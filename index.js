@@ -8,13 +8,14 @@ const fs                            = require('fs')
 const isDev                         = require('./app/assets/js/isdev')
 const path                          = require('path')
 const semver                        = require('semver')
+const { pathToFileURL }             = require('url')
 const url                           = require('url')
 const child_process                 = require('child_process')
 const DecompressZip = require('decompress-zip')
 
 
 const redirectUriPrefix = 'https://login.microsoftonline.com/common/oauth2/nativeclient?'
-const clientID = 'd23ff5a0-2a35-43f5-b3e9-d26e37a913a7'
+const CLIENT_ID = 'd23ff5a0-2a35-43f5-b3e9-d26e37a913a7'
 /*const unhandled                     = require('electron-unhandled')
 const {openNewGitHubIssue, debugInfo} = require('electron-util')
 
@@ -187,17 +188,17 @@ if (!gotTheLock) {
                                     })
 
                                     app.exit(0)
-                                    
+
                                 })
 
                                 unzip.extract({
                                     path: extractPath,
                                     restrict: false
                                 })
-                                
+
                                 return
                             }
-                        }                        
+                        }
                         return
                     }
 
@@ -218,7 +219,7 @@ if (!gotTheLock) {
 
                 await autoUpdater.checkForUpdates()
             }
-            
+
         })
 
         isOnMainUpdateScreen = true
@@ -264,9 +265,9 @@ function initAutoUpdater(event, data) {
                     TrayBallon.once('balloon-closed', () => {
                         TrayBallon.destroy()
                     })
-                }, 5000)            
+                }, 5000)
             })()
-            
+
             /*TrayBallon.on('balloon-closed', () => {
                 TrayBallon.destroy()
             })*/
@@ -294,7 +295,7 @@ function initAutoUpdater(event, data) {
                     TrayBallon.once('balloon-closed', () => {
                         TrayBallon.destroy()
                     })
-                }, 5000)            
+                }, 5000)
             })()
         }
     })
@@ -356,15 +357,13 @@ ipcMain.on('distributionIndexDone', (event, res) => {
 
 // Disable hardware acceleration.
 // https://electronjs.org/docs/tutorial/offscreen-rendering
+app.disableHardwareAcceleration()
 
-
-//app.disableHardwareAcceleration()
-
-let MSALoginWindow = null
+let MSALoginWindow
 
 // Open the Microsoft Account Login window
-ipcMain.on('openMSALoginWindow', (ipcEvent, args) => {
-    if (MSALoginWindow != null) {
+ipcMain.on('openMSALoginWindow', (ipcEvent) => {
+    if (MSALoginWindow) {
         ipcEvent.reply('MSALoginWindowReply', 'error', 'AlreadyOpenException')
         return
     }
@@ -378,24 +377,21 @@ ipcMain.on('openMSALoginWindow', (ipcEvent, args) => {
     })
 
     MSALoginWindow.on('closed', () => {
-
-        MSALoginWindow.destroy()
-        MSALoginWindow = null
+        MSALoginWindow = undefined
     })
 
-    MSALoginWindow.on('close', event => {
+    MSALoginWindow.on('close', () => {
         ipcEvent.reply('MSALoginWindowReply', 'error', 'AuthNotFinished')
-
     })
 
-    MSALoginWindow.webContents.on('did-navigate', (event, uri, responseCode, statusText) => {
+    MSALoginWindow.webContents.on('did-navigate', (_, uri) => {
         if (uri.startsWith(redirectUriPrefix)) {
-            let querys = uri.substring(redirectUriPrefix.length).split('#', 1).toString().split('&')
+            let queries = uri.substring(redirectUriPrefix.length).split('#', 1).toString().split('&')
             let queryMap = new Map()
 
-            querys.forEach(query => {
-                let arr = query.split('=')
-                queryMap.set(arr[0], decodeURI(arr[1]))
+            queries.forEach(query => {
+                const [name, value] = query.split('=')
+                queryMap.set(name, decodeURI(value))
             })
 
             ipcEvent.reply('MSALoginWindowReply', queryMap)
@@ -406,13 +402,13 @@ ipcMain.on('openMSALoginWindow', (ipcEvent, args) => {
     })
 
     MSALoginWindow.removeMenu()
-    MSALoginWindow.loadURL('https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?prompt=select_account&client_id=' + clientID + '&response_type=code&scope=XboxLive.signin%20offline_access&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient')
+    MSALoginWindow.loadURL('https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?prompt=select_account&client_id=' + CLIENT_ID + '&response_type=code&scope=XboxLive.signin%20offline_access&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient')
 })
 
-let MSALogoutWindow = null
+let MSALogoutWindow
 
-ipcMain.on('openMSALogoutWindow', (ipcEvent, args) => {
-    if (MSALogoutWindow == null) {
+ipcMain.on('openMSALogoutWindow', (ipcEvent) => {
+    if (!MSALogoutWindow) {
         MSALogoutWindow = new BrowserWindow({
             title: 'Microsoft Logout',
             backgroundColor: '#222222',
@@ -421,12 +417,12 @@ ipcMain.on('openMSALogoutWindow', (ipcEvent, args) => {
             frame: true,
             icon: getPlatformIcon('SealCircle')
         })
-        MSALogoutWindow.loadURL('https://login.microsoftonline.com/22d104b8-8486-46d6-8e92-f1b5bec275f3/oauth2/v2.0/logout?')
-        MSALogoutWindow.webContents.on('did-navigate', (e) => {
+        MSALogoutWindow.removeMenu()
+        MSALogoutWindow.loadURL('https://login.microsoftonline.com/common/oauth2/v2.0/logout')
+        MSALogoutWindow.webContents.on('did-navigate', () => {
             setTimeout(() => {
                 ipcEvent.reply('MSALogoutWindowReply')
             }, 5000)
-
         })
     }
 })
@@ -451,8 +447,7 @@ async function createWindow() {
             preload: path.join(__dirname, 'app', 'assets', 'js', 'preloader.js'),
             nodeIntegration: true,
             contextIsolation: false,
-            enableRemoteModule: true,
-            worldSafeExecuteJavaScript: true
+            enableRemoteModule: true
         },
         backgroundColor: '#171614'
     })
@@ -465,11 +460,7 @@ async function createWindow() {
 
     ejse.data('bkid', Math.floor((Math.random() * fs.readdirSync(path.join(__dirname, 'app', 'assets', 'images', 'backgrounds')).length)))
 
-    win.loadURL(url.format({
-        pathname: path.join(__dirname, 'app', 'app.ejs'),
-        protocol: 'file:',
-        slashes: true
-    }))
+    win.loadURL(pathToFileURL(path.join(__dirname, 'app', 'app.ejs')).toString())
 
 
 

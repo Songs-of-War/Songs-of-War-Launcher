@@ -2,6 +2,8 @@ const fs   = require('fs-extra')
 const os   = require('os')
 const path = require('path')
 
+const logger = require('./loggerutil')('%c[ConfigManager]', 'color: #a02d2a; font-weight: bold')
+
 const sysRoot = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME)
 // TODO change
 const dataPath = path.join(sysRoot, '.songsofwar')
@@ -20,7 +22,7 @@ exports.getLauncherDirectory = function(){
 
 /**
  * Retrieve the absolute path of the default Minecraft directory regardless of its existence.
- * 
+ *
  * @returns {string} The absolute path of the Minecraft directory.
  */
 exports.getMinecraftDirectory = function(){
@@ -163,9 +165,9 @@ exports.load = function(){
             config = JSON.parse(fs.readFileSync(configPath, 'UTF-8'))
             doValidate = true
         } catch (err){
-            console.error(err)
-            console.log('Configuration file contains malformed JSON or is corrupt.')
-            console.log('Generating a new configuration file.')
+            logger.error(err)
+            logger.log('Configuration file contains malformed JSON or is corrupt.')
+            logger.log('Generating a new configuration file.')
             fs.ensureDirSync(path.join(configPath, '..'))
             config = DEFAULT_CONFIG
             exports.save()
@@ -175,7 +177,7 @@ exports.load = function(){
             exports.save()
         }
     }
-    console.log('Successfully Loaded')
+    logger.log('Successfully Loaded')
 }
 
 /**
@@ -352,17 +354,17 @@ exports.updateAuthAccount = function(uuid, accessToken){
 
 /**
  * Update the tokens of an authenticated microsoft account.
- * 
+ *
  * @param {string} uuid The uuid of the authenticated account.
  * @param {string} accessToken The new Access Token.
  * @param {string} msAccessToken The new Microsoft Access Token
  * @param {string} msRefreshToken The new Microsoft Refresh Token
  * @param {date} msExpires The date when the microsoft access token expires
  * @param {date} mcExpires The date when the mojang access token expires
- * 
+ *
  * @returns {Object} The authenticated account object created by this action.
  */
-exports.updateAuthAccount = function(uuid, accessToken, msAccessToken, msRefreshToken, msExpires, mcExpires){
+exports.updateAuthAccount = function (uuid, accessToken, msAccessToken, msRefreshToken, msExpires, mcExpires) {
     config.authenticationDatabase[uuid].accessToken = accessToken
     config.authenticationDatabase[uuid].expiresAt = mcExpires
     config.authenticationDatabase[uuid].microsoft.access_token = msAccessToken
@@ -372,7 +374,7 @@ exports.updateAuthAccount = function(uuid, accessToken, msAccessToken, msRefresh
 }
 
 /**
- * Adds an authenticated mojang account to the database to be stored.
+ * Adds an authenticated account to the database to be stored.
  * 
  * @param {string} uuid The uuid of the authenticated account.
  * @param {string} accessToken The accessToken of the authenticated account.
@@ -395,7 +397,7 @@ exports.addAuthAccount = function(uuid, accessToken, username, displayName){
 
 /**
  * Adds an authenticated microsoft account to the database to be stored.
- * 
+ *
  * @param {string} uuid The uuid of the authenticated account.
  * @param {string} accessToken The accessToken of the authenticated account.
  * @param {string} name The in game name of the authenticated account.
@@ -403,10 +405,10 @@ exports.addAuthAccount = function(uuid, accessToken, username, displayName){
  * @param {string} msAccessToken The microsoft access token
  * @param {string} msRefreshToken The microsoft refresh token
  * @param {date} msExpires The date when the microsoft access token expires
- * 
+ *
  * @returns {Object} The authenticated account object created by this action.
  */
-exports.addMsAuthAccount = function(uuid, accessToken, name, mcExpires, msAccessToken, msRefreshToken, msExpires){
+exports.addMsAuthAccount = function (uuid, accessToken, name, mcExpires, msAccessToken, msRefreshToken, msExpires) {
     config.selectedAccount = uuid
     config.authenticationDatabase[uuid] = {
         accessToken,
@@ -753,7 +755,7 @@ exports.getAllowPrerelease = function(def = false){
 
 /**
  * Check the if the shader mirroring setting is enabled
- * 
+ *
  * @returns {boolean} Whether the mirror setting is enabled, false for disabled
  */
 exports.getShaderMirroring = function() {
@@ -767,7 +769,7 @@ exports.getShaderMirroring = function() {
 
 /**
  * Set the shader mirroring setting
- * 
+ *
  * @param {boolean} value Enables / Disables the Shader Mirroring config
  */
 exports.setShaderMirroring = function(value) {
