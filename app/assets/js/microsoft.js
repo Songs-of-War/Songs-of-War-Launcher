@@ -54,7 +54,7 @@ async function getXSTSToken(XBLToken) {
                 }
             case 2148916238:
                 throw {
-                    message: 'Since you are not yet 18 years old, an adult must add you to a family in order for you to use Helios Launcher!'
+                    message: 'Since you are not yet 18 years old, an adult must add you to a family in order for you to use Songs of War! (This is a Microsoft limitation)'
                 }
         }
         throw data

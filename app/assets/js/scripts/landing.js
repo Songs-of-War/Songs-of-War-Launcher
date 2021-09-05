@@ -245,9 +245,9 @@ const refreshMojangStatuses = async function(){
         loggerLanding.debug(err)
     }
     
-    document.getElementById('mojangStatusEssentialContainer').innerHTML = tooltipEssentialHTML
-    document.getElementById('mojangStatusNonEssentialContainer').innerHTML = tooltipNonEssentialHTML
-    document.getElementById('mojang_status_icon').style.color = Mojang.statusToHex(status)
+    //document.getElementById('mojangStatusEssentialContainer').innerHTML = tooltipEssentialHTML
+    //document.getElementById('mojangStatusNonEssentialContainer').innerHTML = tooltipNonEssentialHTML
+    //document.getElementById('mojang_status_icon').style.color = Mojang.statusToHex(status)
 }
 
 const refreshServerStatus = async function(fade = false){
