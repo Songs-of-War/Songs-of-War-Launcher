@@ -26,7 +26,7 @@
     "afterPack": "./build/scripts/afterPackHook.js"
   },
   "dependencies": {
-    "@electron/remote": "^1.2.0",
+    "@electron/remote": "^1.2.1",
     "@imjs/electron-differential-updater": "^5.1.6",
     "adm-zip": "^0.5.1",
     "async": "^3.2.1",
