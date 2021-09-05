@@ -1133,7 +1133,7 @@ function dlAsync(login = true){
         
                                 data.forEach((element, index) => {
                                     if(element.startsWith('resourcePacks:')) {
-                                        data[index] = 'resourcePacks:["mod_resources","vanilla","programer_art","file/SoWPack"]'
+                                        data[index] = 'resourcePacks:["mod_resources","vanilla","file/SoWPack"]'
                                         packOn = true
                                     } else if(element.startsWith('soundCategory_music:')) {
                                         data[index] = 'soundCategory_music:0.0'

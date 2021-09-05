@@ -1,6 +1,6 @@
 {
   "name": "songs-of-war-launcher",
-  "version": "1.10.13",
+  "version": "1.10.14",
   "productName": "Songs of War Game",
   "description": "Songs of War Game Launcher",
   "author": "Dexiam",
@@ -26,16 +26,16 @@
     "afterPack": "./build/scripts/afterPackHook.js"
   },
   "dependencies": {
-    "@electron/remote": "^1.2.0",
+    "@electron/remote": "^1.2.1",
     "@imjs/electron-differential-updater": "^5.1.7",
     "adm-zip": "^0.5.1",
-    "async": "^3.2.0",
+    "async": "^3.2.1",
     "decompress-zip": "^0.3.3",
     "discord-rpc": "^3.2.0",
     "ejs": "^3.1.6",
     "ejs-electron": "^2.1.1",
     "electron-unhandled": "^3.0.2",
-    "electron-updater": "^4.4.2",
+    "electron-updater": "^4.4.3",
     "electron-util": "^0.17.0",
     "execa": "^4.1.0",
     "extract-dmg": "^1.0.0",
@@ -49,7 +49,7 @@
     "semver": "^7.3.5",
     "shelljs": "^0.8.4",
     "sudo-prompt": "^9.2.1",
-    "systeminformation": "^5.7.9",
+    "systeminformation": "^5.7.10",
     "tar-fs": "^2.1.1",
     "winreg": "^1.2.4"
   },
