@@ -49,7 +49,7 @@
     "semver": "^7.3.5",
     "shelljs": "^0.8.4",
     "sudo-prompt": "^9.2.1",
-    "systeminformation": "^5.7.10",
+    "systeminformation": "^5.8.0",
     "tar-fs": "^2.1.1",
     "winreg": "^1.2.4"
   },
