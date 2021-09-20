@@ -35,7 +35,7 @@
     "ejs": "^3.1.6",
     "ejs-electron": "^2.1.1",
     "electron-unhandled": "^3.0.2",
-    "electron-updater": "^4.4.5",
+    "electron-updater": "^4.5.1",
     "electron-util": "^0.17.1",
     "execa": "^4.1.0",
     "extract-dmg": "^1.0.0",
